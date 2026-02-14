@@ -1,224 +1,159 @@
-# Backend API - Authentication & Authorization with Docker
+# UCP-TAKRA Backend API
 
-A production-ready Node.js/Express backend with JWT authentication, role-based access control, MongoDB integration, Redis caching, and complete Docker setup.
+A production-ready Node.js/Express backend with JWT authentication, role-based access control, MongoDB, Redis caching, and Docker support.
 
 ## Features
 
-- **JWT Authentication** - Secure token-based authentication with 7-day expiration
-- **MongoDB Integration** - Persistent data storage with Mongoose ODM
-- **Redis Caching** - High-performance response caching with TTL support
-- **Docker Support** - Complete containerization with Docker & Docker Compose
-- **Password Hashing** - Bcryptjs for secure password storage (10 salt rounds)
-- **Role-Based Access Control** - Multi-role system (user, moderator, admin)
-- **Input Validation** - Comprehensive validation with clear error messages
-- **Error Handling** - Consistent error response format
+- **JWT Authentication** - Secure token-based auth with 7-day expiration
+- **MongoDB Integration** - Mongoose ODM with user schema
+- **Redis Caching** - Response caching with TTL support
+- **Docker Support** - Complete containerization setup
+- **Password Hashing** - Bcrypt with 10 salt rounds
+- **Role-Based Access Control** - user, moderator, admin roles
+- **Input Validation** - Comprehensive validation with error messages
 - **MVC Architecture** - Clean separation of concerns
 
 ## Project Structure
 
 ```
 backend/
-├── app.js                  # Express application configuration
+├── app.js                  # Express app configuration
 ├── server.js               # Server entry point
-├── package.json            # Dependencies and scripts
+├── api.http                # API testing file (REST Client)
 ├── Dockerfile              # Multi-stage Docker build
-├── docker-compose.yml      # Docker Compose services
+├── docker-compose.yml      # Docker services
 ├── .env                    # Environment variables
 │
 ├── config/
-│   ├── database.js         # MongoDB connection & operations
-│   ├── cache.js            # Redis connection & operations
+│   ├── database.js         # MongoDB connection
+│   ├── cache.js            # Redis connection
 │   └── jwt.js              # JWT configuration
 │
 ├── controllers/
-│   ├── authController.js   # Authentication logic (signup, login, logout)
-│   ├── userController.js   # User management logic (CRUD, roles)
-│   └── mainController.js   # General controller
+│   ├── authController.js   # Authentication logic
+│   └── userController.js   # User management logic
 │
 ├── middleware/
-│   ├── auth.js             # JWT verification middleware
-│   ├── roleCheck.js        # Role-based authorization middleware
-│   └── cache.js            # Response caching middleware
+│   ├── auth.js             # JWT verification
+│   ├── roleCheck.js        # Role authorization
+│   └── cache.js            # Response caching
 │
 ├── models/
-│   ├── UserSchema.js       # Mongoose user schema with methods
-│   ├── User.js             # Legacy user model
-│   └── mainModel.js        # General model
+│   └── UserSchema.js       # Mongoose user schema
 │
 ├── routes/
 │   ├── index.js            # Route aggregator
-│   ├── authRoutes.js       # Authentication routes
-│   └── userRoutes.js       # User management routes
+│   ├── authRoutes.js       # Auth routes
+│   └── userRoutes.js       # User routes
 │
 └── utils/
-    ├── validation.js       # Input validation utilities
-    └── tokenGenerator.js   # JWT generation & verification
+    ├── validation.js       # Input validation
+    └── tokenGenerator.js   # JWT utilities
 ```
 
-## Installation & Quick Start
+## Quick Start
 
-### Option 1: Docker (Recommended)
-
-**Prerequisites**: Docker and Docker Compose installed
+### Docker (Recommended)
 
 ```bash
-# Start all services (MongoDB, Redis, Node.js API)
+# Start all services
 docker-compose up -d
-
-# Check services are running
-docker-compose ps
 
 # View logs
 docker-compose logs -f app
+
+# Stop services
+docker-compose down
 ```
 
-**Services**:
-- API: http://localhost:5000
-- MongoDB: localhost:27017
-- Redis: localhost:6379
+**Services:**
+| Service | URL |
+|---------|-----|
+| API | http://localhost:5000 |
+| MongoDB | localhost:27018 |
+| Redis | localhost:6380 |
 
-See [DOCKER_SETUP.md](DOCKER_SETUP.md) for detailed Docker documentation.
+### Local Development
 
-### Option 2: Local Machine
-
-**Prerequisites**: Node.js 18+, MongoDB 7.0+, Redis 7.0+
-
-1. **Install Dependencies**
 ```bash
+# Install dependencies
 npm install
+
+# Development mode (with hot reload)
+npm run dev
+
+# Production mode
+npm start
 ```
 
-2. **MongoDB Setup (Local)**
-```bash
-# Install MongoDB
-# https://docs.mongodb.com/manual/installation/
+**Requirements:** Node.js 18+, MongoDB 7+, Redis 7+
 
-# Start MongoDB service
-mongod
+## Environment Variables
+
+```env
+PORT=5000
+NODE_ENV=development
+JWT_SECRET=your-super-secret-jwt-key-change-in-production
+JWT_EXPIRE=7d
+MONGO_URI=mongodb://admin:admin123@localhost:27017/ucp_takra?authSource=admin
+REDIS_URL=redis://:redis123@localhost:6379
 ```
-
-3. **Redis Setup (Local)**
-```bash
-# Install Redis
-# https://redis.io/topics/quickstart& operations
-│   ├── cache.js             # Redis cache setup & operations
-│   └── jwt.js               # JWT configuration
-├── controllers/             # Business logic
-│   ├── mainController.js
-├── middleware/              # Express middleware
-│   ├── auth.js              # JWT verification
-│   ├── roleCheck.js         # Role-based authorization
-│   └── cache.js             # Request caching middleware
-├── models/                  # Data models
-│   ├── User.js              # User class (utilities)
-│   └── UserSchema.js        # Mongoose schema for MongoDB
-├── routes/                  # API routes
-│   ├── auth.js              # Authentication endpoints
-│   └── users.js             # User management endpoints
-├── utils/                   # Utility functions
-│   ├── validation.js        # Input validation
-│   └── tokenGenerator.js    # JWT token operations
-├── app.js                   # Express app setup
-├── server.js                # Server entry point
-├── package.json             # Dependencies
-├── .env                     # Environment variables
-├── Dockerfile               # Docker build instructions
-├── docker-compose.yml       # Docker services orchestration
-├── .dockerignore             # Files excluded from Docker build
-├── README.md                # This file
-├── DOCKER_SETUP.md          # Docker documentation
-
-Server runs at `http://localhost:5000`
-
-## Project Structure
-
-```
-backend/
-├── config/                  # Configuration files
-│   ├── database.js          # MongoDB connection and DB class
-│   ├── jwt.js               # JWT configuration
-├── controllers/             # Business logic
-│   └── mainController.js
-├── middleware/              # Express middleware
-│   ├── auth.js              # JWT verification
-│   └── roleCheck.js         # Role-based authorization
-├── models/                  # Data models
-│   ├── User.js              # User class (utilities)
-│   └── UserSchema.js        # Mongoose schema for MongoDB
-├── routes/                  # API routes
-│   ├── auth.js              # Authentication endpoints
-│   └── users.js             # User management endpoints
-├── utils/                   # Utility functions
-│   ├── validation.js        # Input validation
-│   └── tokenGenerator.js    # JWT token operations
-├── app.js                   # Express app setup
-├── server.js                # Server entry point
-├── package.json             # Dependencies
-├── .env                     # Environment variables
-├── README.md                # This file
-└── API_DOCS.md              # API documentation
-```
-
-## File Organization
-
-### models/User.js
-Contains the User class with static password utilities:
-- `User.hashPassword(password)` - Hash password
-- `User.comparePassword(plain, hashed)` - Compare passwords
-
-### models/UserSchema.js
-MongoDB Mongoose schema with:
-- Email validation and uniqueness constraint
-- Password hashing middleware (runs before save)
-- Instance methods: `comparePassword()`, `toSafeObject()`, `updateLastLogin()`
-- Static methods: `findByEmail()`, `verifyCredentials()`
-
-### config/database.js
-Database operations class with async methods:
-- `createUser(userData)` - Create new user
-- `findUserByEmail(email)` - Find user by email
-- `findUserById(id)` - Find user by ObjectId
-- `getAllUsers()` - Get all users
-- `updateUser(id, updates)` - Update user fields
-- `deleteUser(id)` - Delete user
 
 ## API Endpoints
 
-### Authentication
+### Authentication (`/api/auth`)
 
-#### Register User
-```
-POST /api/auth/register
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | `/signup` | Register new user | Public |
+| POST | `/login` | Login & get token | Public |
+| POST | `/logout` | Logout & invalidate token | Token |
+| GET | `/me` | Get current user | Token |
+
+### Users (`/api/users`)
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/me` | Get my profile | Token |
+| PUT | `/update` | Update my profile | Token |
+| GET | `/` | Get all users | Admin |
+| GET | `/:id` | Get user by ID | Admin |
+| PUT | `/:id/role` | Update user role | Admin |
+| DELETE | `/:id` | Delete user | Admin |
+
+### Health
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/health` | Health check |
+| GET | `/api` | API welcome |
+
+## API Testing
+
+Use the `api.http` file with VS Code REST Client extension:
+
+1. Install [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) extension
+2. Open `api.http`
+3. Click "Send Request" above any request
+4. After login, copy the token and update `@token` variable
+
+### Example Requests
+
+**Register:**
+```http
+POST http://localhost:5000/api/auth/signup
 Content-Type: application/json
 
 {
   "email": "user@example.com",
   "password": "password123",
-  "name": "John Doe",
-  "role": "user"
+  "name": "Test User"
 }
 ```
 
-**Response:**
-```json
-{
-  "success": true,
-  "message": "User registered successfully",
-  "data": {
-    "user": {
-      "id": "507f1f77bcf86cd799439011",
-      "email": "user@example.com",
-      "name": "John Doe",
-      "role": "user"
-    },
-    "token": "eyJhbGciOiJIUzI1NiIs..."
-  }
-}
-```
-
-#### Login
-```
-POST /api/auth/login
+**Login:**
+```http
+POST http://localhost:5000/api/auth/login
 Content-Type: application/json
 
 {
@@ -227,319 +162,58 @@ Content-Type: application/json
 }
 ```
 
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Login successful",
-  "data": {
-    "user": {
-      "id": "507f1f77bcf86cd799439011",
-      "email": "user@example.com",
-      "name": "John Doe",
-      "role": "user"
-    },
-    "token": "eyJhbGciOiJIUzI1NiIs..."
-  }
-}
-```
-
-### User Management (Protected)
-
-All user endpoints require authentication. Add token to request header:
-```
+**Protected Request:**
+```http
+GET http://localhost:5000/api/users/me
 Authorization: Bearer <your-jwt-token>
 ```
 
-#### Get Current User
-```
-GET /api/users/me
-Authorization: Bearer <token>
+## Docker Commands
+
+```bash
+# Build and start
+docker-compose up -d --build
+
+# View logs
+docker-compose logs -f app
+
+# Stop all services
+docker-compose down
+
+# Stop and remove volumes (reset data)
+docker-compose down -v
+
+# Restart single service
+docker-compose restart app
 ```
 
-#### Get All Users (Admin only)
-```
-GET /api/users
-Authorization: Bearer <admin-token>
-```
+## Response Format
 
-#### Get User by ID (Admin only)
-```
-GET /api/users/:id
-Authorization: Bearer <admin-token>
-```
-
-#### Update User Role (Admin only)
-```
-PUT /api/users/:id/role
-Authorization: Bearer <admin-token>
-Content-Type: application/json
-
+**Success:**
+```json
 {
-  "role": "moderator"
+  "success": true,
+  "message": "Operation successful",
+  "data": { ... }
 }
 ```
 
-#### Delete User (Admin only)
-```
-DELETE /api/users/:id
-Authorization: Bearer <admin-token>
+**Error:**
+```json
+{
+  "success": false,
+  "message": "Error description",
+  "errors": [ ... ]
+}
 ```
 
 ## User Roles
 
 | Role | Permissions |
 |------|-------------|
-| **user** | View own profile |
-| **moderator** | View own profile, manage content |
-| **admin** | Full access - manage all users, assign roles, delete users |
-
-## Validation Rules
-
-### Email
-- Required
-- Valid email format
-- Maximum 100 characters
-- Must be unique in database
-
-### Password
-- Required
-- Minimum 6 characters
-- Maximum 100 characters
-- Hashed with bcryptjs (10 salt rounds)
-- Never stored or returned in plain text
-
-### Name
-- Required
-- Minimum 2 characters
-- Maximum 50 characters
-- Trimmed automatically
-
-### Role
-- Optional (defaults to 'user')
-- Valid values: `user`, `moderator`, `admin`
-
-## Error Handling
-
-All endpoints follow consistent error format:
-
-```json
-{
-  "success": false,
-  "message": "Error description"
-}
-```
-
-### HTTP Status Codes
-- `200` - Success
-- `201` - Resource created
-- `400` - Bad request / Validation failed
-- `401` - Unauthorized / Invalid credentials
-- `403` - Forbidden / Insufficient permissions
-- `404` - Resource not found
-- `409` - Conflict / Email already exists
-- `500` - Server error
-
-## Security Features
-
-1. **Password Hashing**
-   - Uses bcryptjs with 10 salt rounds
-   - Hashed before storing in database
-   - Never stored or returned in API responses
-
-2. **JWT Tokens**
-   - Signed with secret key
-   - Expiration time: 7 days
-   - Verified on every protected request
-   - Contains: user id, email, role
-
-3. **Input Validation**
-   - Server-side validation on all inputs
-   - Clear error messages for invalid data
-   - Email uniqueness constraint in database
-
-4. **Authorization**
-   - Role-based access control
-   - Token verification middleware
-   - Protected endpoints
-
-5. **MongoDB Security**
-   -Start Services (Docker)
-
-```bash
-docker-compose up -d
-```
-
-### Register Admin User
-```bash
-curl -X POST http://localhost:5000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "admin@example.com",
-    "password": "admin123",
-    "name": "Admin User",
-    "role": "admin"
-  }'
-```
-
-### Register Regular User
-```bash
-curl -X POST http://localhost:5000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "password123",
-    "name": "John Doe",
-    "role": "user"
-  }'
-```
-
-### Login
-```bash
-curl -X POST http://localhost:5000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "admin@example.com",
-    "password": "admin123"
-  }'
-```
-
-**Response includes JWT token** - copy the token for next requests
-
-### Get Current User (with JWT token)
-```bash
-curl -X GET http://localhost:5000/api/users/me \
-  -H "Authorization: Bearer YOUR_TOKEN_HERE"
-```
-
-### Get All Users (Admin only)
-```bash
-curl -X GET http://localhost:5000/api/users \
-  -H "Authorization: Bearer ADMIN_TOKEN_HERE"
-```
-
-### Check Cache (Redis)
-```bash
-# Inside Redis container
-docker-compose exec redis redis-cli -a redis123
-
-# View cache keys
-> KEYS cache:*
-
-# Check specific cache value
-> GET cache:507f1f77bcf86cd799439011:/api/users/me
-```
-
-### Get All Users (Admin)
-```bash
-cur
-
-## Troubleshooting
-
-### Docker Issues
-
-See [DOCKER_SETUP.md](DOCKER_SETUP.md) for comprehensive Docker troubleshooting.
-
-### MongoDB Connection
-```bash
-# Check connection inside Docker
-docker-compose exec app npm list mongoose
-
-# Test MongoDB
-docker-compose exec mongodb mongosh -u admin -p admin123
-```
-
-### Redis Connection
-```bash
-# Check Redis health
-docker-compose exec redis redis-cli -a redis123 PING
-
-# Should return: PONG
-```
-
-### Clear All Data
-```bash
-# Remove all containers and volumes
-docker-compose down -v
-
-# Restart
-docker-compose up -dginl -X GET http://localhost:5000/api/users \
-  -H "Authorization: Bearer ADMIN_TOKEN_HERE"
-```
-
-## Database Schema
-
-### Users Collection
-
-```javascript
-{
-  _id: ObjectId,                    // MongoDB ID
-  email: String (unique),           // User email
-  password: String (hashed),        // Bcryptjs hash
-  name: String,                     // User name
-  rPerformance Metrics
-
-### Caching Performance
-
-With Redis caching enabled:
-- **First request**: ~20-50ms (DB query)
-- **Cached request**: ~2-5ms (Redis hit)
-- **Cache miss**: Auto-refreshed from DB
-
-### MongoDB Performance
-
-- Indexed queries on email field
-- Automatic query optimization
-- Connection pooling with Mongoose
-
-### Docker Resource Usage
-
-- MongoDB: ~300MB memory
-- Redis: ~50MB memory
-- Node.js API: ~100MB memory
-- Total: ~450MB typical usage
-
-## Next Steps
-
-1. **Email Verification** - Verify user emails before account activation
-2. **Refresh Tokens** - Add token refresh mechanism
-3. **Rate Limiting** - Add rate limiting middleware
-4. **Structured Logging** - Implement Winston or Pino
-5. **Unit Tests** - Add Jest test suite
-6. **API Documentation** - Add Swagger/OpenAPI
-7. **Session Management** - Add session store to Redis
-8. **Monitoring** - Add Prometheus metricsnected successfully"
-
-# Inspect collections using MongoDB CLI
-mongosh
-> use ucp_takra
-> db.users.find()
-```
-
-## Next Steps
-
-1. **Email Verification** - Verify user emails before account activation
-2. **Refresh Tokens** - Add token refresh mechanism for better security
-3. **Rate Limiting** - Prevent abuse with rate limiting middleware
-4. **Logging** - Implement structured logging (Winston, Pino, etc.)
-5. **Tests** - Write unit and integration tests (Jest, Mocha, etc.)
-6. **API Documentation** - Add Swagger/OpenAPI documentation
-
-## Troubleshooting
-
-### MongoDB Connection Failed
-- Ensure MongoDB service is running: `mongod`
-- Check `MONGO_URI` in `.env`
-- Verify MongoDB is installed correctly
-
-### Password Hashing Slow
-- This is normal - bcryptjs uses 10 salt rounds for security
-- Provides strong protection against brute force attacks
-
-### Token Validation Errors
-- Ensure token is included in Authorization header
-- Use format: `Bearer <token>`
-- Check JWT_SECRET in `.env`
+| `user` | Access own profile, update own data |
+| `moderator` | User permissions + moderate content |
+| `admin` | Full access to all endpoints |
 
 ## License
 

@@ -44,7 +44,7 @@ const validateName = (name) => {
 };
 
 const validateRole = (role) => {
-  const validRoles = ['user', 'moderator', 'admin'];
+  const validRoles = ['user', 'admin', 'support'];
   if (!role) {
     return { valid: true }; // Default role is 'user'
   }

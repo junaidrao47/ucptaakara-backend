@@ -6,12 +6,12 @@
  * 
  * Usage:
  *   router.get('/admin', authenticate, authorize('admin'), controller.method);
- *   router.get('/staff', authenticate, authorize('admin', 'moderator'), controller.method);
+ *   router.get('/staff', authenticate, authorize('admin', 'support'), controller.method);
  * 
  * Available Roles:
- *   - user      : Regular user (default)
- *   - moderator : Moderator with elevated permissions
- *   - admin     : Administrator with full access
+ *   - user    : Regular user (default)
+ *   - support : Support staff with elevated permissions
+ *   - admin   : Administrator with full access
  * 
  * Prerequisites:
  *   - Must be used after authenticate middleware

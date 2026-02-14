@@ -8,6 +8,7 @@
  * - JSON body parsing
  * - URL-encoded body parsing
  * - Static file serving
+ * - Passport.js authentication (Google OAuth)
  * - API routes
  * - Error handling
  * - 404 handling
@@ -17,6 +18,9 @@
 require('dotenv').config();
 const express = require('express');
 const app = express();
+
+// Import Passport configuration
+const { initializePassport } = require('./config/passport');
 
 // =============================================================================
 // MIDDLEWARE CONFIGURATION
@@ -50,6 +54,12 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+/**
+ * Passport.js Initialization
+ * - Configures Google OAuth 2.0 strategy
+ */
+initializePassport(app);
 
 /**
  * Request Logger (Development only)

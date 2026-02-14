@@ -1,0 +1,373 @@
+###############################################################################
+# UCP-TAKRA API Testing File
+###############################################################################
+# This file can be used with:
+# - VS Code REST Client Extension (humao.rest-client)
+# - IntelliJ HTTP Client
+# - Any .http file compatible tool
+#
+# Usage:
+# 1. Install REST Client extension in VS Code
+# 2. Click "Send Request" above any request
+# 3. Copy accessToken from login response to @accessToken variable
+# 4. Copy refreshToken from login response to @refreshToken variable
+#
+# Token System:
+# - accessToken: Short-lived (15 min) - used for API requests
+# - refreshToken: Long-lived (7 days) - used to get new access tokens
+#
+# Available Roles: user, admin, support
+###############################################################################
+
+### Configuration
+@baseUrl = http://localhost:5000/api
+@contentType = application/json
+
+# Access Token - Copy from login response (expires in 15 min)
+@accessToken = YOUR_ACCESS_TOKEN_HERE
+
+# Refresh Token - Copy from login response (expires in 7 days)
+@refreshToken = YOUR_REFRESH_TOKEN_HERE
+
+# Admin tokens
+@adminAccessToken = YOUR_ADMIN_ACCESS_TOKEN_HERE
+@adminRefreshToken = YOUR_ADMIN_REFRESH_TOKEN_HERE
+
+# Support tokens
+@supportAccessToken = YOUR_SUPPORT_ACCESS_TOKEN_HERE
+
+# Legacy token variable (for backwards compatibility)
+@token = {{accessToken}}
+@adminToken = {{adminAccessToken}}
+@supportToken = {{supportAccessToken}}
+
+###############################################################################
+# HEALTH CHECK
+###############################################################################
+
+### Health Check - Verify API is running
+GET {{baseUrl}}/health
+
+
+### API Welcome
+GET {{baseUrl}}
+
+
+###############################################################################
+# AUTHENTICATION ROUTES (/api/auth)
+###############################################################################
+
+### Register New User
+POST {{baseUrl}}/auth/signup
+Content-Type: {{contentType}}
+
+{
+  "email": "testuser@example.com",
+  "password": "password123",
+  "name": "Test User"
+}
+
+
+### Register Admin User
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@example.com",
+  "password": "admin123",
+  "name": "Admin User",
+  "role": "admin"
+}
+
+
+### Register Support User
+POST {{baseUrl}}/auth/signup
+Content-Type: {{contentType}}
+
+{
+  "email": "support@example.com",
+  "password": "support123",
+  "name": "Support User",
+  "role": "support"
+}
+
+
+### Login User
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "testuser@example.com",
+  "password": "password123"
+}
+
+
+### Login Admin
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@example.com",
+  "password": "admin123"
+}
+
+
+### Login Support
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "support@example.com",
+  "password": "support123"
+}
+
+
+###############################################################################
+# GOOGLE OAUTH ROUTES (/api/auth/google)
+###############################################################################
+# Note: Google OAuth requires browser interaction
+# Open these URLs in a browser to test:
+
+### Initiate Google OAuth Login
+# Open this URL in your browser to start Google authentication:
+# http://localhost:5000/api/auth/google
+#
+# After successful authentication, you will be redirected to:
+# http://localhost:3000/oauth/callback?accessToken=<jwt>&refreshToken=<jwt>
+
+### Google OAuth Failure Endpoint
+GET {{baseUrl}}/auth/google/failure
+
+
+###############################################################################
+# TOKEN REFRESH ROUTES (/api/auth)
+###############################################################################
+
+### Refresh Access Token
+# Use this to get a new access token when the current one expires
+POST {{baseUrl}}/auth/refresh
+Content-Type: {{contentType}}
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+
+### Refresh Token - Invalid Token Test
+POST {{baseUrl}}/auth/refresh
+Content-Type: {{contentType}}
+
+{
+  "refreshToken": "invalid_refresh_token_here"
+}
+
+
+### Refresh Token - Missing Token Test
+POST {{baseUrl}}/auth/refresh
+Content-Type: {{contentType}}
+
+{
+}
+
+
+###############################################################################
+# PROTECTED ROUTES
+###############################################################################
+
+### Get Current User (Protected)
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{accessToken}}
+
+
+### Logout (Protected)
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{accessToken}}
+
+
+### Revoke Refresh Token (Protected)
+# Use this to invalidate the refresh token (logout from all sessions)
+POST {{baseUrl}}/auth/revoke
+Authorization: Bearer {{accessToken}}
+
+
+###############################################################################
+# USER ROUTES (/api/users)
+###############################################################################
+
+### Get My Profile (Protected)
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{accessToken}}
+
+
+### Get My Profile - Alias (Protected)
+GET {{baseUrl}}/users/profile
+Authorization: Bearer {{accessToken}}
+
+
+### Update My Profile (Protected)
+PUT {{baseUrl}}/users/update
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": "Updated Name"
+}
+
+
+### Update My Profile - Alias (Protected)
+PUT {{baseUrl}}/users/profile
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": "Another Updated Name"
+}
+
+
+###############################################################################
+# ADMIN ROUTES (/api/users) - Require Admin Role
+###############################################################################
+
+### Get All Users (Admin Only)
+GET {{baseUrl}}/users
+Authorization: Bearer {{adminAccessToken}}
+
+
+### Get All Users - Alias (Admin Only)
+GET {{baseUrl}}/users/allusers
+Authorization: Bearer {{adminAccessToken}}
+
+
+### Get User by ID (Admin Only)
+# Replace USER_ID with actual MongoDB ObjectId
+GET {{baseUrl}}/users/USER_ID_HERE
+Authorization: Bearer {{adminAccessToken}}
+
+
+### Get User Profile by ID - Alias (Admin Only)
+GET {{baseUrl}}/users/userprofile/USER_ID_HERE
+Authorization: Bearer {{adminAccessToken}}
+
+
+### Update User Role (Admin Only)
+PUT {{baseUrl}}/users/USER_ID_HERE/role
+Content-Type: {{contentType}}
+Authorization: Bearer {{adminAccessToken}}
+
+{
+  "role": "support"
+}
+
+
+### Delete User (Admin Only)
+DELETE {{baseUrl}}/users/USER_ID_HERE
+Authorization: Bearer {{adminAccessToken}}
+
+
+###############################################################################
+# VALIDATION TESTING - Error Cases
+###############################################################################
+
+### Register - Missing Email
+POST {{baseUrl}}/auth/signup
+Content-Type: {{contentType}}
+
+{
+  "password": "password123",
+  "name": "No Email User"
+}
+
+
+### Register - Invalid Email Format
+POST {{baseUrl}}/auth/signup
+Content-Type: {{contentType}}
+
+{
+  "email": "invalid-email",
+  "password": "password123",
+  "name": "Invalid Email User"
+}
+
+
+### Register - Short Password
+POST {{baseUrl}}/auth/signup
+Content-Type: {{contentType}}
+
+{
+  "email": "short@example.com",
+  "password": "123",
+  "name": "Short Password User"
+}
+
+
+### Register - Missing Name
+POST {{baseUrl}}/auth/signup
+Content-Type: {{contentType}}
+
+{
+  "email": "noname@example.com",
+  "password": "password123"
+}
+
+
+### Login - Wrong Password
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "testuser@example.com",
+  "password": "wrongpassword"
+}
+
+
+### Login - Non-existent User
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "notexist@example.com",
+  "password": "password123"
+}
+
+
+### Access Protected Route Without Token
+GET {{baseUrl}}/users/me
+
+
+### Access Protected Route With Invalid Token
+GET {{baseUrl}}/users/me
+Authorization: Bearer invalid_token_here
+
+
+### Access Protected Route With Expired Token
+# Use an expired access token to test 401 response
+GET {{baseUrl}}/users/me
+Authorization: Bearer expired_access_token_here
+
+
+### Access Admin Route Without Admin Role
+# Use a regular user token for this test
+GET {{baseUrl}}/users
+Authorization: Bearer {{accessToken}}
+
+
+###############################################################################
+# QUICK TEST WORKFLOW
+###############################################################################
+# 1. Run "Health Check" to verify API is running
+# 2. Run "Register New User" to create a test account
+# 3. Run "Login User" - you'll receive:
+#    - accessToken (expires in 15 min) - use for API requests
+#    - refreshToken (expires in 7 days) - use to get new access tokens
+# 4. Copy accessToken to @accessToken variable at top of file
+# 5. Copy refreshToken to @refreshToken variable at top of file
+# 6. Run "Get My Profile" to verify authentication works
+# 7. When access token expires, use "Refresh Access Token" endpoint
+# 8. Register an admin user and login to test admin routes
+#
+# Token Refresh Flow:
+# - Access tokens expire every 15 minutes
+# - Use POST /api/auth/refresh with your refresh token to get a new access token
+# - Refresh tokens expire in 7 days
+# - Use POST /api/auth/revoke to invalidate refresh token (logout everywhere)
+###############################################################################
