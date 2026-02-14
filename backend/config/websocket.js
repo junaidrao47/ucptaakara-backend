@@ -80,7 +80,12 @@ const TYPING_TIMEOUT_MS = 5000;
 const initializeWebSocket = (httpServer) => {
   io = new Server(httpServer, {
     cors: {
-      origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+      origin: [
+        'https://takra-admin.vercel.app',
+        'https://takra-frontend.vercel.app',
+        process.env.FRONTEND_URL || 'http://localhost:3000',
+        'http://localhost:5173'
+      ],
       methods: ['GET', 'POST'],
       credentials: true
     },

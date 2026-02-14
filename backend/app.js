@@ -41,13 +41,24 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static('public'));
 
 /**
- * CORS Headers (Simple implementation)
- * - Allows cross-origin requests
+ * CORS Configuration
+ * - Allows requests from approved frontend origins
  */
+const allowedOrigins = [
+  'https://takra-admin.vercel.app',
+  'https://takra-frontend.vercel.app',
+  process.env.FRONTEND_URL || 'http://localhost:3000',
+  'http://localhost:5173'  // Vite dev server
+];
+
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Credentials', 'true');
   
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
