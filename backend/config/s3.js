@@ -38,7 +38,6 @@ const uploadToS3 = async (fileBuffer, key, contentType, metadata = {}) => {
         Key: key,
         Body: fileBuffer,
         ContentType: contentType,
-        ACL: 'public-read',
         Metadata: metadata,
         CacheControl: 'max-age=31536000' // 1 year cache
       }

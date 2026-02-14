@@ -30,6 +30,7 @@ const competitionRoutes = require('./competitionRoutes');
 const registrationRoutes = require('./registrationRoutes');
 const uploadRoutes = require('./uploadRoutes');
 const supportRoutes = require('./supportRoutes');
+const chatRoutes = require('./chatRoutes');
 const adminRoutes = require('./admin');
 
 // =============================================================================
@@ -79,6 +80,12 @@ router.use('/registrations', registrationRoutes);
 router.use('/uploads', uploadRoutes);
 
 /**
+ * Chat Routes (Authenticated)
+ * @path /api/chat/*
+ */
+router.use('/chat', chatRoutes);
+
+/**
  * Support Routes (Support role)
  * @path /api/support/*
  */
@@ -124,6 +131,7 @@ router.get('/', (req, res) => {
       competitions: '/api/competitions',
       registrations: '/api/registrations',
       uploads: '/api/uploads',
+      chat: '/api/chat',
       support: '/api/support',
       admin: '/api/admin',
       health: '/api/health'

@@ -193,6 +193,7 @@ module.exports = {
   get,
   set,
   del,
+  delete: del,       // Alias so controllers can use cacheService.delete()
   delMany,
   flush,
   isConnected,

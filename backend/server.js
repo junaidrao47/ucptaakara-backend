@@ -20,9 +20,11 @@
  * =============================================================================
  */
 
+const http = require('http');
 const app = require('./app');
 const { connectDB } = require('./config/database');
 const { initializeCache } = require('./config/cache');
+const { initializeWebSocket } = require('./config/websocket');
 
 const PORT = process.env.PORT || 5000;
 
@@ -42,13 +44,21 @@ const startServer = async () => {
     console.log('[2/3] Connecting to MongoDB...');
     await connectDB();
 
-    // Step 3: Start listening on port
-    console.log('[3/3] Starting HTTP server...');
-    app.listen(PORT, () => {
+    // Step 3: Create HTTP server & attach WebSocket
+    console.log('[3/4] Creating HTTP server...');
+    const server = http.createServer(app);
+
+    // Step 4: Initialize WebSocket (Socket.IO)
+    console.log('[4/4] Initializing WebSocket...');
+    initializeWebSocket(server);
+
+    // Start listening
+    server.listen(PORT, () => {
       console.log('\n========================================');
       console.log(`✓ Server is running on port ${PORT}`);
       console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(`✓ API: http://localhost:${PORT}/api`);
+      console.log(`✓ WebSocket: ws://localhost:${PORT}`);
       console.log('========================================\n');
     });
   } catch (error) {

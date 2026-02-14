@@ -17,6 +17,7 @@ const categoryRoutes = require('./categoryRoutes');
 const competitionRoutes = require('./competitionRoutes');
 const registrationRoutes = require('./registrationRoutes');
 const analyticsRoutes = require('./analyticsRoutes');
+const chatRoutes = require('./chatRoutes');
 
 // Import middleware
 const authenticate = require('../../middleware/auth');
@@ -31,5 +32,6 @@ router.use('/categories', categoryRoutes);
 router.use('/competitions', competitionRoutes);
 router.use('/registrations', registrationRoutes);
 router.use('/analytics', analyticsRoutes);
+router.use('/chat', chatRoutes);
 
 module.exports = router;
