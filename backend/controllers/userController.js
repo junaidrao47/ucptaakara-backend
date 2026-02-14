@@ -6,8 +6,12 @@
  * 
  * Methods:
  * - getUserProfile     : Get current user's profile
+ * - getAccountSettings : Get user's account settings
  * - getUserById        : Get user by ID (admin only)
  * - updateProfile      : Update current user's profile
+ * - updateAccountSettings : Update account settings
+ * - changePassword     : Change user password
+ * - deleteOwnAccount   : User deletes their own account
  * - getAllUsers        : Get all users (admin only)
  * - updateUserRole     : Update user role (admin only)
  * - deleteUser         : Delete a user (admin only)
@@ -15,8 +19,9 @@
  */
 
 const { db } = require('../config/database');
-const { validateName, validateEmail } = require('../utils/validation');
+const { validateName, validateEmail, validatePassword } = require('../utils/validation');
 const { clearUserCache, clearRouteCache } = require('../middleware/cache');
+const bcrypt = require('bcryptjs');
 
 /**
  * @desc    Get current user's profile
@@ -339,11 +344,248 @@ const deleteUser = async (req, res) => {
   }
 };
 
+/**
+ * @desc    Get user account settings
+ * @route   GET /api/users/settings
+ * @access  Private
+ */
+const getAccountSettings = async (req, res) => {
+  try {
+    const user = await db.findUserById(req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        id: user._id ? user._id.toString() : user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        isActive: user.isActive,
+        emailNotifications: user.emailNotifications ?? true,
+        lastLogin: user.lastLogin,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+        hasGoogleAuth: !!user.googleId
+      }
+    });
+
+  } catch (error) {
+    console.error('GetAccountSettings error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch account settings',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+/**
+ * @desc    Update account settings
+ * @route   PUT /api/users/settings
+ * @access  Private
+ */
+const updateAccountSettings = async (req, res) => {
+  try {
+    const { emailNotifications } = req.body;
+    const userId = req.user.id;
+    
+    const updates = {};
+
+    if (typeof emailNotifications === 'boolean') {
+      updates.emailNotifications = emailNotifications;
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No settings to update'
+      });
+    }
+
+    const updatedUser = await db.updateUser(userId, updates);
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    await clearUserCache(userId);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Account settings updated successfully',
+      data: {
+        emailNotifications: updatedUser.emailNotifications ?? true
+      }
+    });
+
+  } catch (error) {
+    console.error('UpdateAccountSettings error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update account settings',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+/**
+ * @desc    Change user password
+ * @route   PUT /api/users/password
+ * @access  Private
+ */
+const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.id;
+
+    // Validate inputs
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password and new password are required'
+      });
+    }
+
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.valid) {
+      return res.status(400).json({
+        success: false,
+        message: passwordValidation.message
+      });
+    }
+
+    // Get user with password
+    const user = await db.findUserById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Check if user has password (not OAuth only)
+    if (!user.password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot change password for OAuth accounts. Please set a password first.'
+      });
+    }
+
+    // Verify current password
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Current password is incorrect'
+      });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update password
+    await db.updateUser(userId, { password: hashedPassword });
+    await clearUserCache(userId);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password changed successfully'
+    });
+
+  } catch (error) {
+    console.error('ChangePassword error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to change password',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+/**
+ * @desc    Delete own account
+ * @route   DELETE /api/users/account
+ * @access  Private
+ */
+const deleteOwnAccount = async (req, res) => {
+  try {
+    const { password, confirmation } = req.body;
+    const userId = req.user.id;
+
+    // Require confirmation text
+    if (confirmation !== 'DELETE MY ACCOUNT') {
+      return res.status(400).json({
+        success: false,
+        message: 'Please type "DELETE MY ACCOUNT" to confirm'
+      });
+    }
+
+    // Get user
+    const user = await db.findUserById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Verify password if user has one
+    if (user.password) {
+      if (!password) {
+        return res.status(400).json({
+          success: false,
+          message: 'Password is required to delete account'
+        });
+      }
+
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(401).json({
+          success: false,
+          message: 'Incorrect password'
+        });
+      }
+    }
+
+    // Delete user
+    await db.deleteUser(userId);
+    await clearUserCache(userId);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Account deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('DeleteOwnAccount error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to delete account',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
 // Export all controller methods
 module.exports = {
   getUserProfile,
   getUserById,
   updateProfile,
+  getAccountSettings,
+  updateAccountSettings,
+  changePassword,
+  deleteOwnAccount,
   getAllUsers,
   updateUserRole,
   deleteUser

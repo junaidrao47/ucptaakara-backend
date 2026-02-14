@@ -67,4 +67,14 @@ const authorize = (...allowedRoles) => {
   };
 };
 
+/**
+ * @desc    Alternative syntax for role requirement (accepts array)
+ * @param   {string[]} allowedRoles - Array of roles allowed to access
+ * @returns {Function} Express middleware function
+ */
+const requireRole = (allowedRoles) => authorize(...allowedRoles);
+
+// Export both the default and named exports for flexibility
 module.exports = authorize;
+module.exports.authorize = authorize;
+module.exports.requireRole = requireRole;

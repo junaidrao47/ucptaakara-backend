@@ -34,8 +34,8 @@
 @adminRefreshToken = YOUR_ADMIN_REFRESH_TOKEN_HERE
 
 # Support tokens
-@supportAccessToken = YOUR_SUPPORT_ACCESS_TOKEN_HERE
-
+@supportAccessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OTAwZWM3NTRlZjI1NTkzZDAxZjk5ZSIsImVtYWlsIjoic3VwcG9ydEBleGFtcGxlLmNvbSIsInJvbGUiOiJzdXBwb3J0IiwidHlwZSI6ImFjY2VzcyIsImlhdCI6MTc3MTA0ODY0OCwiZXhwIjoxNzcxMDQ5NTQ4fQ.5k1XZM5YBIluZ2xiPnyA1mavzrax9QnFD2fh5VfAUDU
+@supportRefreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OTAwZWM3NTRlZjI1NTkzZDAxZjk5ZSIsInR5cGUiOiJyZWZyZXNoIiwiaWF0IjoxNzcxMDQ4NjQ4LCJleHAiOjE3NzE2NTM0NDh9.RSXrx0mmECByX96OQ9oXsaXuSytiKmeHuRbVp5QG-ko
 # Legacy token variable (for backwards compatibility)
 @token = {{accessToken}}
 @adminToken = {{adminAccessToken}}
@@ -352,6 +352,529 @@ Authorization: Bearer {{accessToken}}
 
 
 ###############################################################################
+# CATEGORY ROUTES (Public) - /api/categories
+###############################################################################
+
+### Get All Categories (Public)
+GET {{baseUrl}}/categories
+
+
+### Get All Categories with Stats (Public)
+GET {{baseUrl}}/categories?includeStats=true
+
+
+### Get Category by Slug (Public)
+GET {{baseUrl}}/categories/hackathon
+
+
+###############################################################################
+# COMPETITION ROUTES (Public) - /api/competitions
+###############################################################################
+
+### Get All Competitions (Public)
+GET {{baseUrl}}/competitions
+
+
+### Get Competitions with Filters
+GET {{baseUrl}}/competitions?category=CATEGORY_ID_HERE&status=published&search=coding
+
+
+### Get Competitions - Sort by Popular
+GET {{baseUrl}}/competitions?sort=popular&limit=10
+
+
+### Get Competitions - Sort by Trending
+GET {{baseUrl}}/competitions?sort=trending&limit=10
+
+
+### Get Competitions - Filter by Date Range
+GET {{baseUrl}}/competitions?startDate=2024-01-01&endDate=2024-12-31
+
+
+### Get Competitions - Pagination
+GET {{baseUrl}}/competitions?page=1&limit=10
+
+
+### Get Featured Competitions
+GET {{baseUrl}}/competitions/featured
+
+
+### Get Trending Competitions
+GET {{baseUrl}}/competitions/trending
+
+
+### Get Competition Calendar View
+GET {{baseUrl}}/competitions/calendar?year=2024&month=6
+
+
+### Get Upcoming Competitions
+GET {{baseUrl}}/competitions/upcoming?limit=5
+
+
+### Get Competition Suggestions (for autocomplete)
+GET {{baseUrl}}/competitions/suggestions?q=hack
+
+
+### Get Competition by ID or Slug
+GET {{baseUrl}}/competitions/COMPETITION_ID_OR_SLUG_HERE
+
+
+### Get Related Competitions
+GET {{baseUrl}}/competitions/COMPETITION_ID_HERE/related
+
+
+###############################################################################
+# REGISTRATION ROUTES (User) - /api/registrations
+###############################################################################
+
+### Register for Competition
+POST {{baseUrl}}/registrations/COMPETITION_ID_HERE
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "institution": "University of Technology",
+  "phone": "+1234567890",
+  "experience": "intermediate",
+  "expectations": "Looking forward to learning and networking",
+  "teamName": "Code Warriors",
+  "teamMembers": [
+    {
+      "name": "John Doe",
+      "email": "john@example.com",
+      "role": "Developer"
+    },
+    {
+      "name": "Jane Smith",
+      "email": "jane@example.com",
+      "role": "Designer"
+    }
+  ],
+  "referralSource": "social_media"
+}
+
+
+### Get My Registrations
+GET {{baseUrl}}/registrations/my
+Authorization: Bearer {{accessToken}}
+
+
+### Get My Registrations - Filter by Status
+GET {{baseUrl}}/registrations/my?status=approved
+
+
+### Check Registration Status for Competition
+GET {{baseUrl}}/registrations/check/COMPETITION_ID_HERE
+Authorization: Bearer {{accessToken}}
+
+
+### Get Registration by ID
+GET {{baseUrl}}/registrations/REGISTRATION_ID_HERE
+Authorization: Bearer {{accessToken}}
+
+
+### Get Registration by Confirmation Code
+GET {{baseUrl}}/registrations/code/ABC12345
+Authorization: Bearer {{accessToken}}
+
+
+### Cancel Registration
+PATCH {{baseUrl}}/registrations/REGISTRATION_ID_HERE/cancel
+Authorization: Bearer {{accessToken}}
+
+
+### Submit Project for Registration
+POST {{baseUrl}}/registrations/REGISTRATION_ID_HERE/submit
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "title": "My Awesome Project",
+  "description": "A revolutionary solution to solve world hunger",
+  "repositoryUrl": "https://github.com/user/project",
+  "demoUrl": "https://myproject.demo.com",
+  "videoUrl": "https://youtube.com/watch?v=abc123",
+  "techStack": ["Node.js", "React", "MongoDB"]
+}
+
+
+###############################################################################
+# SUPPORT ROUTES - /api/support
+###############################################################################
+
+### Support Dashboard Stats
+GET {{baseUrl}}/support/dashboard
+Authorization: Bearer {{supportToken}}
+
+
+### Get Pending Registrations (Support)
+GET {{baseUrl}}/support/registrations/pending
+Authorization: Bearer {{supportToken}}
+
+
+### Get Pending Registrations with Search (Support)
+GET {{baseUrl}}/support/registrations/pending?search=john&page=1&limit=20
+Authorization: Bearer {{supportToken}}
+
+
+### Approve Registration (Support)
+PATCH {{baseUrl}}/support/registrations/REGISTRATION_ID_HERE/approve
+Authorization: Bearer {{supportToken}}
+
+
+### Reject Registration (Support)
+PATCH {{baseUrl}}/support/registrations/REGISTRATION_ID_HERE/reject
+Content-Type: {{contentType}}
+Authorization: Bearer {{supportToken}}
+
+{
+  "reason": "Incomplete information provided"
+}
+
+
+### Search Users (Support)
+GET {{baseUrl}}/support/users/search?q=john
+Authorization: Bearer {{supportToken}}
+
+
+### Get User Registrations (Support)
+GET {{baseUrl}}/support/users/USER_ID_HERE/registrations
+Authorization: Bearer {{supportToken}}
+
+
+###############################################################################
+# ADMIN CATEGORY ROUTES - /api/admin/categories
+###############################################################################
+
+### Create Category (Admin)
+POST {{baseUrl}}/admin/categories
+Content-Type: {{contentType}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "name": "Hackathon",
+  "slug": "hackathon",
+  "description": "24-48 hour coding competitions where teams build innovative solutions",
+  "icon": "code",
+  "color": "#FF5733",
+  "displayOrder": 1
+}
+
+
+### Get All Categories (Admin) - Includes inactive
+GET {{baseUrl}}/admin/categories?includeInactive=true
+Authorization: Bearer {{adminToken}}
+
+
+### Get Category by ID (Admin)
+GET {{baseUrl}}/admin/categories/CATEGORY_ID_HERE
+Authorization: Bearer {{adminToken}}
+
+
+### Update Category (Admin)
+PUT {{baseUrl}}/admin/categories/CATEGORY_ID_HERE
+Content-Type: {{contentType}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "name": "Updated Hackathon",
+  "description": "Updated description for hackathon category"
+}
+
+
+### Reorder Categories (Admin)
+PUT {{baseUrl}}/admin/categories/reorder
+Content-Type: {{contentType}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "categoryIds": ["CATEGORY_ID_1", "CATEGORY_ID_2", "CATEGORY_ID_3"]
+}
+
+
+### Delete Category (Admin) - Soft Delete
+DELETE {{baseUrl}}/admin/categories/CATEGORY_ID_HERE
+Authorization: Bearer {{adminToken}}
+
+
+###############################################################################
+# ADMIN COMPETITION ROUTES - /api/admin/competitions
+###############################################################################
+
+### Create Competition (Admin)
+POST {{baseUrl}}/admin/competitions
+Content-Type: {{contentType}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "title": "Code Challenge 2024",
+  "slug": "code-challenge-2024",
+  "shortDescription": "Annual coding competition for developers",
+  "description": "Join us for an exciting 48-hour coding marathon where you'll build innovative solutions...",
+  "category": "CATEGORY_ID_HERE",
+  "startDate": "2024-06-01T09:00:00Z",
+  "endDate": "2024-06-03T09:00:00Z",
+  "deadline": "2024-05-25T23:59:59Z",
+  "maxParticipants": 500,
+  "registrationFee": 0,
+  "prizes": [
+    {
+      "position": "1st Place",
+      "amount": 5000,
+      "description": "Cash prize + Internship opportunity"
+    },
+    {
+      "position": "2nd Place",
+      "amount": 3000,
+      "description": "Cash prize"
+    },
+    {
+      "position": "3rd Place",
+      "amount": 1500,
+      "description": "Cash prize"
+    }
+  ],
+  "rules": ["Teams of 2-4 members", "Original code only", "No pre-built solutions"],
+  "requirements": ["Valid student ID", "GitHub account"],
+  "tags": ["coding", "hackathon", "programming", "innovation"],
+  "contactEmail": "organizer@example.com"
+}
+
+
+### Get All Competitions (Admin)
+GET {{baseUrl}}/admin/competitions
+Authorization: Bearer {{adminToken}}
+
+
+### Get Competitions with Filters (Admin)
+GET {{baseUrl}}/admin/competitions?status=draft&page=1&limit=10
+Authorization: Bearer {{adminToken}}
+
+
+### Get Competition by ID (Admin)
+GET {{baseUrl}}/admin/competitions/COMPETITION_ID_HERE
+Authorization: Bearer {{adminToken}}
+
+
+### Update Competition (Admin)
+PUT {{baseUrl}}/admin/competitions/COMPETITION_ID_HERE
+Content-Type: {{contentType}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "title": "Updated Code Challenge 2024",
+  "maxParticipants": 600
+}
+
+
+### Publish Competition (Admin)
+PATCH {{baseUrl}}/admin/competitions/COMPETITION_ID_HERE/publish
+Authorization: Bearer {{adminToken}}
+
+
+### Toggle Featured Status (Admin)
+PATCH {{baseUrl}}/admin/competitions/COMPETITION_ID_HERE/feature
+Authorization: Bearer {{adminToken}}
+
+
+### Duplicate Competition (Admin)
+POST {{baseUrl}}/admin/competitions/COMPETITION_ID_HERE/duplicate
+Authorization: Bearer {{adminToken}}
+
+
+### Get Competition Registrations (Admin)
+GET {{baseUrl}}/admin/competitions/COMPETITION_ID_HERE/registrations?status=approved&page=1&limit=20
+Authorization: Bearer {{adminToken}}
+
+
+### Delete Competition (Admin) - Soft Delete
+DELETE {{baseUrl}}/admin/competitions/COMPETITION_ID_HERE
+Authorization: Bearer {{adminToken}}
+
+
+###############################################################################
+# ADMIN REGISTRATION ROUTES - /api/admin/registrations
+###############################################################################
+
+### Get All Registrations (Admin)
+GET {{baseUrl}}/admin/registrations
+Authorization: Bearer {{adminToken}}
+
+
+### Get Registrations with Filters (Admin)
+GET {{baseUrl}}/admin/registrations?status=pending&competition=COMPETITION_ID_HERE&page=1&limit=20
+Authorization: Bearer {{adminToken}}
+
+
+### Get Registration by ID (Admin)
+GET {{baseUrl}}/admin/registrations/REGISTRATION_ID_HERE
+Authorization: Bearer {{adminToken}}
+
+
+### Approve Registration (Admin)
+PATCH {{baseUrl}}/admin/registrations/REGISTRATION_ID_HERE/approve
+Authorization: Bearer {{adminToken}}
+
+
+### Reject Registration (Admin)
+PATCH {{baseUrl}}/admin/registrations/REGISTRATION_ID_HERE/reject
+Content-Type: {{contentType}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "reason": "Does not meet the eligibility criteria"
+}
+
+
+### Bulk Approve Registrations (Admin)
+POST {{baseUrl}}/admin/registrations/bulk-approve
+Content-Type: {{contentType}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "registrationIds": ["REG_ID_1", "REG_ID_2", "REG_ID_3"]
+}
+
+
+### Bulk Reject Registrations (Admin)
+POST {{baseUrl}}/admin/registrations/bulk-reject
+Content-Type: {{contentType}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "registrationIds": ["REG_ID_1", "REG_ID_2"],
+  "reason": "Bulk rejection - Missing documents"
+}
+
+
+### Update Registration Details (Admin)
+PATCH {{baseUrl}}/admin/registrations/REGISTRATION_ID_HERE
+Content-Type: {{contentType}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "notes": "VIP participant - ensure priority support"
+}
+
+
+### Export Registrations (Admin)
+GET {{baseUrl}}/admin/registrations/export?competition=COMPETITION_ID_HERE&status=approved
+Authorization: Bearer {{adminToken}}
+
+
+###############################################################################
+# ADMIN ANALYTICS ROUTES - /api/admin/analytics
+###############################################################################
+
+### Get Dashboard Overview
+GET {{baseUrl}}/admin/analytics/dashboard
+Authorization: Bearer {{adminToken}}
+
+
+### Get Realtime Stats
+GET {{baseUrl}}/admin/analytics/realtime
+Authorization: Bearer {{adminToken}}
+
+
+### Get User Growth Data (for charts)
+GET {{baseUrl}}/admin/analytics/users/growth?period=30
+Authorization: Bearer {{adminToken}}
+
+
+### Get Registration Trends (for charts)
+GET {{baseUrl}}/admin/analytics/registrations/trends?period=30
+Authorization: Bearer {{adminToken}}
+
+
+### Get Category Performance
+GET {{baseUrl}}/admin/analytics/categories/performance
+Authorization: Bearer {{adminToken}}
+
+
+### Get Competition Analytics Detail
+GET {{baseUrl}}/admin/analytics/competitions?period=30
+Authorization: Bearer {{adminToken}}
+
+
+###############################################################################
+# UPLOAD ROUTES - /api/uploads
+###############################################################################
+
+### Upload Category Images (icon and/or banner)
+# Use form-data with fields: icon, banner
+POST {{baseUrl}}/uploads/category/CATEGORY_ID_HERE
+Authorization: Bearer {{adminToken}}
+Content-Type: multipart/form-data; boundary=----FormBoundary
+
+------FormBoundary
+Content-Disposition: form-data; name="icon"; filename="icon.png"
+Content-Type: image/png
+
+< ./test-images/icon.png
+------FormBoundary
+Content-Disposition: form-data; name="banner"; filename="banner.jpg"
+Content-Type: image/jpeg
+
+< ./test-images/banner.jpg
+------FormBoundary--
+
+
+### Upload Competition Cover Image
+# Use form-data with field: cover
+POST {{baseUrl}}/uploads/competition/COMPETITION_ID_HERE
+Authorization: Bearer {{adminToken}}
+Content-Type: multipart/form-data; boundary=----FormBoundary
+
+------FormBoundary
+Content-Disposition: form-data; name="cover"; filename="cover.jpg"
+Content-Type: image/jpeg
+
+< ./test-images/cover.jpg
+------FormBoundary--
+
+
+### Upload Competition Gallery Images (multiple)
+# Use form-data with field: gallery (can be multiple)
+POST {{baseUrl}}/uploads/competition/COMPETITION_ID_HERE
+Authorization: Bearer {{adminToken}}
+Content-Type: multipart/form-data; boundary=----FormBoundary
+
+------FormBoundary
+Content-Disposition: form-data; name="gallery"; filename="gallery1.jpg"
+Content-Type: image/jpeg
+
+< ./test-images/gallery1.jpg
+------FormBoundary
+Content-Disposition: form-data; name="gallery"; filename="gallery2.jpg"
+Content-Type: image/jpeg
+
+< ./test-images/gallery2.jpg
+------FormBoundary--
+
+
+### Delete Gallery Image
+DELETE {{baseUrl}}/uploads/competition/COMPETITION_ID_HERE/gallery/0
+Authorization: Bearer {{adminToken}}
+
+
+### Upload Generic Image
+POST {{baseUrl}}/uploads/image
+Authorization: Bearer {{accessToken}}
+Content-Type: multipart/form-data; boundary=----FormBoundary
+
+------FormBoundary
+Content-Disposition: form-data; name="image"; filename="test.jpg"
+Content-Type: image/jpeg
+
+< ./test-images/test.jpg
+------FormBoundary
+Content-Disposition: form-data; name="folder"
+
+misc
+------FormBoundary--
+
+
+###############################################################################
 # QUICK TEST WORKFLOW
 ###############################################################################
 # 1. Run "Health Check" to verify API is running
@@ -370,4 +893,15 @@ Authorization: Bearer {{accessToken}}
 # - Use POST /api/auth/refresh with your refresh token to get a new access token
 # - Refresh tokens expire in 7 days
 # - Use POST /api/auth/revoke to invalidate refresh token (logout everywhere)
+#
+# Testing Competition Platform:
+# 1. Login as admin and copy adminToken
+# 2. Create a category using POST /api/admin/categories
+# 3. Create a competition using POST /api/admin/competitions
+# 4. Publish competition using PATCH /api/admin/competitions/:id/publish
+# 5. Login as regular user
+# 6. Browse competitions using GET /api/competitions
+# 7. Register for competition using POST /api/registrations/:competitionId
+# 8. Login as support to manage registrations
+# 9. View analytics using GET /api/admin/analytics/*
 ###############################################################################

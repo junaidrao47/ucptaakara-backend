@@ -1,17 +1,27 @@
 # UCP-TAKRA Backend API
 
-A production-ready Node.js/Express backend with JWT authentication, role-based access control, MongoDB, Redis caching, and Docker support.
+A production-ready Competition Management Platform backend built with Node.js/Express, featuring JWT authentication, role-based access control, MongoDB, Redis caching, AWS S3 image uploads, and Docker support.
 
 ## Features
 
-- **JWT Authentication** - Secure token-based auth with 7-day expiration
-- **MongoDB Integration** - Mongoose ODM with user schema
+- **JWT Authentication** - Dual token system (access: 15min, refresh: 7 days)
+- **Google OAuth** - Social authentication with Passport.js
+- **Role-Based Access Control** - user, support, admin roles
+- **MongoDB Integration** - Mongoose ODM with optimized queries
 - **Redis Caching** - Response caching with TTL support
+- **AWS S3 Integration** - Image uploads with optimization
+- **Image Processing** - Sharp-based optimization (WebP, multiple sizes)
 - **Docker Support** - Complete containerization setup
-- **Password Hashing** - Bcrypt with 10 salt rounds
-- **Role-Based Access Control** - user, moderator, admin roles
-- **Input Validation** - Comprehensive validation with error messages
+- **Input Validation** - express-validator with comprehensive checks
 - **MVC Architecture** - Clean separation of concerns
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [API Reference](docs/API_REFERENCE.md) | Complete API documentation |
+| [Architecture](docs/ARCHITECTURE.md) | System architecture overview |
+| [api.http](api.http) | Interactive API testing file |
 
 ## Project Structure
 
@@ -22,33 +32,62 @@ backend/
 ├── api.http                # API testing file (REST Client)
 ├── Dockerfile              # Multi-stage Docker build
 ├── docker-compose.yml      # Docker services
-├── .env                    # Environment variables
 │
 ├── config/
 │   ├── database.js         # MongoDB connection
 │   ├── cache.js            # Redis connection
-│   └── jwt.js              # JWT configuration
+│   ├── jwt.js              # JWT configuration
+│   ├── passport.js         # Google OAuth setup
+│   └── s3.js               # AWS S3 configuration
 │
 ├── controllers/
-│   ├── authController.js   # Authentication logic
-│   └── userController.js   # User management logic
+│   ├── authController.js       # Authentication
+│   ├── userController.js       # User management
+│   ├── dashboardController.js  # User dashboard
+│   ├── categoryController.js   # Public categories
+│   ├── competitionController.js# Public competitions
+│   ├── registrationController.js# User registrations
+│   ├── supportController.js    # Support staff features
+│   ├── uploadController.js     # File uploads
+│   └── admin/
+│       ├── categoryController.js    # Admin categories
+│       ├── competitionController.js # Admin competitions
+│       ├── registrationController.js# Admin registrations
+│       └── analyticsController.js   # Admin analytics
 │
 ├── middleware/
 │   ├── auth.js             # JWT verification
 │   ├── roleCheck.js        # Role authorization
-│   └── cache.js            # Response caching
+│   ├── cache.js            # Response caching
+│   ├── upload.js           # Multer file upload
+│   └── validators.js       # Input validation
 │
 ├── models/
-│   └── UserSchema.js       # Mongoose user schema
+│   ├── UserSchema.js       # User model
+│   ├── Category.js         # Category model
+│   ├── Competition.js      # Competition model
+│   └── Registration.js     # Registration model
 │
 ├── routes/
 │   ├── index.js            # Route aggregator
 │   ├── authRoutes.js       # Auth routes
-│   └── userRoutes.js       # User routes
+│   ├── userRoutes.js       # User routes
+│   ├── dashboardRoutes.js  # Dashboard routes
+│   ├── categoryRoutes.js   # Category routes
+│   ├── competitionRoutes.js# Competition routes
+│   ├── registrationRoutes.js# Registration routes
+│   ├── supportRoutes.js    # Support routes
+│   ├── uploadRoutes.js     # Upload routes
+│   └── admin/              # Admin route modules
 │
-└── utils/
-    ├── validation.js       # Input validation
-    └── tokenGenerator.js   # JWT utilities
+├── utils/
+│   ├── validation.js       # Input validation
+│   ├── tokenGenerator.js   # JWT utilities
+│   └── imageOptimizer.js   # Sharp image processing
+│
+└── docs/
+    ├── API_REFERENCE.md    # API documentation
+    └── ARCHITECTURE.md     # Architecture docs
 ```
 
 ## Quick Start
@@ -70,8 +109,8 @@ docker-compose down
 | Service | URL |
 |---------|-----|
 | API | http://localhost:5000 |
-| MongoDB | localhost:27018 |
-| Redis | localhost:6380 |
+| MongoDB | localhost:27017 |
+| Redis | localhost:6379 |
 
 ### Local Development
 
@@ -91,42 +130,72 @@ npm start
 ## Environment Variables
 
 ```env
+# Server
 PORT=5000
 NODE_ENV=development
-JWT_SECRET=your-super-secret-jwt-key-change-in-production
+
+# JWT
+JWT_SECRET=your-super-secret-jwt-key
 JWT_EXPIRE=7d
+
+# Database
 MONGO_URI=mongodb://admin:admin123@localhost:27017/ucp_takra?authSource=admin
+
+# Redis
 REDIS_URL=redis://:redis123@localhost:6379
+
+# Google OAuth
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
+
+# Frontend URL
+FRONTEND_URL=http://localhost:3000
+
+# AWS S3
+AWS_ACCESS_KEY_ID=your-access-key
+AWS_SECRET_ACCESS_KEY=your-secret-key
+AWS_REGION=ap-southeast-1
+AWS_S3_BUCKET=your-bucket-name
+AWS_S3_BASE_URL=https://your-bucket.s3.region.amazonaws.com
 ```
 
-## API Endpoints
+## API Overview
 
-### Authentication (`/api/auth`)
+### Public Endpoints
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| POST | `/signup` | Register new user | Public |
-| POST | `/login` | Login & get token | Public |
-| POST | `/logout` | Logout & invalidate token | Token |
-| GET | `/me` | Get current user | Token |
+| Module | Base Path | Description |
+|--------|-----------|-------------|
+| Auth | `/api/auth` | Login, register, OAuth |
+| Categories | `/api/categories` | Browse categories |
+| Competitions | `/api/competitions` | Browse competitions |
+| Health | `/api/health` | Health check |
 
-### Users (`/api/users`)
+### Protected Endpoints (User)
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/me` | Get my profile | Token |
-| PUT | `/update` | Update my profile | Token |
-| GET | `/` | Get all users | Admin |
-| GET | `/:id` | Get user by ID | Admin |
-| PUT | `/:id/role` | Update user role | Admin |
-| DELETE | `/:id` | Delete user | Admin |
+| Module | Base Path | Description |
+|--------|-----------|-------------|
+| Users | `/api/users` | Profile management |
+| Dashboard | `/api/dashboard` | User dashboard |
+| Registrations | `/api/registrations` | Register for competitions |
+| Uploads | `/api/uploads` | File uploads |
 
-### Health
+### Support Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/health` | Health check |
-| GET | `/api` | API welcome |
+| Module | Base Path | Description |
+|--------|-----------|-------------|
+| Support | `/api/support` | Manage registrations |
+
+### Admin Endpoints
+
+| Module | Base Path | Description |
+|--------|-----------|-------------|
+| Categories | `/api/admin/categories` | CRUD categories |
+| Competitions | `/api/admin/competitions` | CRUD competitions |
+| Registrations | `/api/admin/registrations` | Manage all registrations |
+| Analytics | `/api/admin/analytics` | Dashboard & charts |
+
+📖 **Full API documentation:** [docs/API_REFERENCE.md](docs/API_REFERENCE.md)
 
 ## API Testing
 
@@ -135,38 +204,30 @@ Use the `api.http` file with VS Code REST Client extension:
 1. Install [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) extension
 2. Open `api.http`
 3. Click "Send Request" above any request
-4. After login, copy the token and update `@token` variable
+4. After login, copy tokens to variables at top of file
 
-### Example Requests
+## User Roles
 
-**Register:**
-```http
-POST http://localhost:5000/api/auth/signup
-Content-Type: application/json
+| Role | Permissions |
+|------|-------------|
+| `user` | Profile, dashboard, register for competitions |
+| `support` | User + manage registrations (approve/reject) |
+| `admin` | Full access to all endpoints |
 
-{
-  "email": "user@example.com",
-  "password": "password123",
-  "name": "Test User"
-}
-```
+## Image Processing
 
-**Login:**
-```http
-POST http://localhost:5000/api/auth/login
-Content-Type: application/json
+Images uploaded via `/api/uploads` are automatically:
+- Converted to WebP format
+- Resized to multiple sizes
+- Optimized for web delivery
+- Stored on AWS S3
 
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
-```
-
-**Protected Request:**
-```http
-GET http://localhost:5000/api/users/me
-Authorization: Bearer <your-jwt-token>
-```
+| Type | Sizes Generated |
+|------|-----------------|
+| Category Icon | 200x200, 64x64 |
+| Category Banner | 1200x400, 400x133 |
+| Competition Cover | 1920x600, 800x250, 400x125 |
+| Competition Gallery | 1200x1200, 600x600, 150x150 |
 
 ## Docker Commands
 
@@ -203,19 +264,10 @@ docker-compose restart app
 {
   "success": false,
   "message": "Error description",
-  "errors": [ ... ]
+  "error": "Details (dev only)"
 }
 ```
-
-## User Roles
-
-| Role | Permissions |
-|------|-------------|
-| `user` | Access own profile, update own data |
-| `moderator` | User permissions + moderate content |
-| `admin` | Full access to all endpoints |
 
 ## License
 
 ISC
-

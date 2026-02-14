@@ -11,6 +11,10 @@
  * GET  /api/users/profile         - Get current user profile (alias)
  * PUT  /api/users/update          - Update current user profile
  * PUT  /api/users/profile         - Update current user profile (alias)
+ * GET  /api/users/settings        - Get account settings
+ * PUT  /api/users/settings        - Update account settings
+ * PUT  /api/users/password        - Change password
+ * DELETE /api/users/account       - Delete own account
  * 
  * ADMIN ROUTES (require JWT token + admin role):
  * GET  /api/users                 - Get all users
@@ -72,6 +76,41 @@ router.put('/update', authenticate, userController.updateProfile);
  * @body    { name?, email? }
  */
 router.put('/profile', authenticate, userController.updateProfile);
+
+/**
+ * @route   GET /api/users/settings
+ * @desc    Get account settings
+ * @access  Private
+ * @header  Authorization: Bearer <token>
+ */
+router.get('/settings', authenticate, userController.getAccountSettings);
+
+/**
+ * @route   PUT /api/users/settings
+ * @desc    Update account settings
+ * @access  Private
+ * @header  Authorization: Bearer <token>
+ * @body    { emailNotifications?: boolean }
+ */
+router.put('/settings', authenticate, userController.updateAccountSettings);
+
+/**
+ * @route   PUT /api/users/password
+ * @desc    Change user password
+ * @access  Private
+ * @header  Authorization: Bearer <token>
+ * @body    { currentPassword, newPassword }
+ */
+router.put('/password', authenticate, userController.changePassword);
+
+/**
+ * @route   DELETE /api/users/account
+ * @desc    Delete own account
+ * @access  Private
+ * @header  Authorization: Bearer <token>
+ * @body    { password?, confirmation: "DELETE MY ACCOUNT" }
+ */
+router.delete('/account', authenticate, userController.deleteOwnAccount);
 
 // =============================================================================
 // ADMIN ROUTES (Require Admin Role)

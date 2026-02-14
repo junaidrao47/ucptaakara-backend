@@ -8,16 +8,21 @@
     "dev": "nodemon server.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.990.0",
+    "@aws-sdk/lib-storage": "^3.990.0",
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "express-session": "^1.19.0",
-    "express-validator": "^7.2.0",
+    "express-validator": "^7.3.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.6.0",
+    "multer": "^2.0.2",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
-    "redis": "^4.7.0"
+    "redis": "^4.7.0",
+    "sharp": "^0.34.5",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
